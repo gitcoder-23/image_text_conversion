@@ -81,6 +81,8 @@ class _InvoiceScannerState extends State<InvoiceScanner> {
     // Iterate through each line of extracted text
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i];
+      print('extract-lines=> $line');
+      extractedProducts.add({line: line});
 
       // Detect the table header
       if (line.contains('Cant.') && line.contains('Modelo')) {
@@ -104,17 +106,18 @@ class _InvoiceScannerState extends State<InvoiceScanner> {
         print('Columns: $columns');
 
         // Ensure there are enough columns to match the table structure
-        if (columns.length >= 5) {
-          products.add({
-            "Cant.": columns[0].trim(),
-            "Modelo": columns[1].trim(),
-            "Descripción": columns[2].trim(),
-            "Pr. Unit.": columns[3].trim(),
-            "Pr. Total.": columns[4].trim(),
-          });
-        } else {
-          print('Skipping line: Not enough columns.');
-        }
+        // if (columns.length >= 5) {
+        // products.add({
+        //   "Cant.": columns[0].trim(),
+        //   "Modelo": columns[1].trim(),
+        //   "Descripción": columns[2].trim(),
+        //   "Pr. Unit.": columns[3].trim(),
+        //   "Pr. Total.": columns[4].trim(),
+        // });
+
+        // } else {
+        //   print('Skipping line: Not enough columns.');
+        // }
       }
     }
 
@@ -162,48 +165,61 @@ class _InvoiceScannerState extends State<InvoiceScanner> {
       appBar: AppBar(
         title: Text('Invoice Scanner'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              statusMessage,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: extractedProducts.length,
-                itemBuilder: (context, index) {
-                  final product = extractedProducts[index];
-                  return Card(
-                    elevation: 4,
-                    margin: EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      title: Text('Product ${index + 1}'),
-                      subtitle: Text(
-                        'Cant: ${product["Cant."]}\n'
-                        'Modelo: ${product["Modelo"]}\n'
-                        'Descripción: ${product["Descripción"]}\n'
-                        'Pr. Unit.: ${product["Pr. Unit."]}\n'
-                        'Pr. Total.: ${product["Pr. Total."]}',
-                      ),
-                    ),
-                  );
-                },
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                statusMessage,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-            ),
-            ElevatedButton(
-              onPressed: () => processInvoiceImage(isFromCamera: false),
-              child: Text('Upload Invoice Image'),
-            ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () => processInvoiceImage(isFromCamera: true),
-              child: Text('Capture Invoice'),
-            ),
-          ],
+              SizedBox(height: 20),
+              Text(
+                extractedProducts.map((product) {
+                  return product.entries
+                      .map((entry) => '${entry.key}: ${entry.value}')
+                      .join('\n');
+                }).join('\n\n'),
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 15,
+                ),
+              ),
+              // Expanded(
+              //   child: ListView.builder(
+              //     itemCount: extractedProducts.length,
+              //     itemBuilder: (context, index) {
+              //       final product = extractedProducts[index];
+              //       return Card(
+              //         elevation: 4,
+              //         margin: EdgeInsets.symmetric(vertical: 8),
+              //         child: ListTile(
+              //           title: Text('Product ${index + 1}'),
+              //           subtitle: Text(
+              //             'Cant: ${product["Cant."]}\n'
+              //             'Modelo: ${product["Modelo"]}\n'
+              //             'Descripción: ${product["Descripción"]}\n'
+              //             'Pr. Unit.: ${product["Pr. Unit."]}\n'
+              //             'Pr. Total.: ${product["Pr. Total."]}',
+              //           ),
+              //         ),
+              //       );
+              //     },
+              //   ),
+              // ),
+              ElevatedButton(
+                onPressed: () => processInvoiceImage(isFromCamera: false),
+                child: Text('Upload Invoice Image'),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () => processInvoiceImage(isFromCamera: true),
+                child: Text('Capture Invoice'),
+              ),
+            ],
+          ),
         ),
       ),
     );
